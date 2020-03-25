@@ -15,6 +15,22 @@ def execute_query(arg):
     results = cursor.fetchall()
     return results
 
+def check_close_match(arg):
+    query = cursor.execute("SELECT Expression FROM Dictionary WHERE Expression like '%%%s%%'"%(arg))
+    result = cursor.fetchall()
+    row = [item[0] for item in result]
+    if len(get_close_matches(arg,row,cutoff=0.8)) > 0:
+        return True
+
+def retrieve_close_match(arg):
+    query = cursor.execute("SELECT Expression FROM Dictionary WHERE Expression like '%%%s%%'"%(arg))
+    result = cursor.fetchall()
+    row = [item[0] for item in result]
+    close_match = get_close_matches(arg,row,cutoff=0.8)[0]
+    return close_match
+
+
+
 def fetch_meaning(word):
     word = word.lower()
     if execute_query(word):
@@ -23,14 +39,15 @@ def fetch_meaning(word):
         return execute_query(word.title())
     elif execute_query(word.upper()):
         return execute_query(word.upper())
-    # elif len(get_close_matches(word,data.keys(),cutoff=0.8)) > 0:
-    #     yn = input("Did you mean %s instead? Enter Y if Yes, or N if No:"%(get_close_matches(word,data.keys(),cutoff=0.8)[0]))
-    #     if yn == "Y":
-    #         return data[get_close_matches(word,data.keys(),cutoff=0.8)[0]]
-    #     elif yn == "N":
-    #         return "The word doesn't exist. Please double check it."
-    #     else:
-    #         return "We didn't understood your input."
+    elif check_close_match(word):
+        print("inside close_match")
+        yn = input("Did you mean %s instead? Enter Y if Yes, or N if No:"%(retrieve_close_match(word)))
+        if yn == "Y":
+            return execute_query(retrieve_close_match(word))
+        elif yn == "N":
+            return "The word doesn't exist. Please double check it."
+        else:
+            return "We didn't understood your input."
     else:
         return "The word doesn't exist. Please double check it."
 
