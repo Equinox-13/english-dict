@@ -2,20 +2,30 @@ import json
 from difflib import get_close_matches
 import mysql.connector
 
+# Connection parameters
 con = mysql.connector.connect(
     user = "ardit700_student",
     password = "ardit700_student",
     host = "108.167.140.122",
     database = "ardit700_pm1database")
 
+# Cursor object
 cursor = con.cursor()
 
 def execute_query(word):
+    """
+    Takes a word as input and simply returns the meaning by
+    executing a sql query
+    """
     query = cursor.execute("SELECT * FROM Dictionary WHERE Expression='%s'"%(word))
     meaning = cursor.fetchall()
     return meaning
 
 def check_close_match_length(arg):
+    """
+    Takes a word as input and checks whether close match exist for this
+    word returns True
+    """
     query = cursor.execute("SELECT Expression FROM Dictionary WHERE length(Expression) > 1 AND length(Expression) < %d"%(len(arg)+1))
     result = cursor.fetchall()
     row = [item[0] for item in result]
@@ -23,6 +33,9 @@ def check_close_match_length(arg):
         return True
 
 def retrieve_close_match(arg):
+    """
+    Takes a word as input and returns the close match of it
+    """
     query = cursor.execute("SELECT Expression FROM Dictionary WHERE length(Expression) > 1 AND length(Expression) < %d"%(len(arg)+1))
     result = cursor.fetchall()
     row = [item[0] for item in result]
@@ -31,6 +44,11 @@ def retrieve_close_match(arg):
 
 
 def fetch_meaning(word):
+    """
+    Main method
+    Takes a word as input and checks various conditons
+    returns the meaning or an error message
+    """
     word = word.lower()
     if execute_query(word):
         return execute_query(word)
@@ -49,8 +67,10 @@ def fetch_meaning(word):
     else:
         return "The word doesn't exist. Please double check it."
 
+
 word  = input("Enter a word: ")
 result = fetch_meaning(word)
+
 if type(result) == list:
     print("=======Search Result=======")
     for each in result:
